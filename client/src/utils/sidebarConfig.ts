@@ -1,6 +1,6 @@
 import {
     UserCheck, Briefcase, UserCircle,
-    PlusCircle, FolderKanban, Search, Wallet, ShieldPlus, ShieldAlert, Inbox, MessageSquare, CreditCard, FileText
+    PlusCircle, FolderKanban, Search, Wallet, ShieldPlus, ShieldAlert, Inbox, MessageSquare, CreditCard, FileText, Coins
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -47,10 +47,12 @@ export const getSidebarMenu = (role: string, organizerStatus: string, kycStatus?
                     { label: 'My Organized Chits', path: '/organizer/my-chits', icon: FolderKanban },
                     { label: 'Join Chit', path: '/join-chit', icon: Search },
                     { label: 'My Chits', path: '/my-chits', icon: Wallet },
+                    { label: 'My Dues', path: '/my-installments', icon: Coins },
                 ]
             },
             ...baseItems,
             paymentsItem,
+            memberStatementItem,
             organizerStatementItem,
             { label: 'Profile', path: '/profile', icon: UserCircle },
             supportItem
@@ -61,6 +63,7 @@ export const getSidebarMenu = (role: string, organizerStatus: string, kycStatus?
     const chitsSubItems: MenuItem[] = [
         { label: 'Join Chit', path: '/join-chit', icon: Search },
         { label: 'My Chits', path: '/my-chits', icon: Wallet },
+        { label: 'My Dues', path: '/my-installments', icon: Coins },
     ];
 
     const baseMenu: MenuItem[] = [

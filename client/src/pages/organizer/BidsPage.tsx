@@ -282,7 +282,7 @@ export const BidsPage = () => {
                         </button>
                     )}
 
-                    {isOrganizer && (
+                    {isOrganizer && !isMember && (
                         <button
                             onClick={() => setActiveBiddingTab('MY_BID')}
                             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${

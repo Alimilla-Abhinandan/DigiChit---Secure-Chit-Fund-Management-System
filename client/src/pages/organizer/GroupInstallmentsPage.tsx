@@ -7,6 +7,8 @@ import api from '../../api/axios';
 import { StatisticsCards } from '../../components/installments/StatisticsCards';
 import { CollectionProgress } from '../../components/installments/CollectionProgress';
 import { InstallmentTable } from '../../components/installments/InstallmentTable';
+import { PayNowModal } from '../../components/installments/PayNowModal';
+import type { Installment } from '../../types/installment';
 import { ConfirmationDialog } from '../../components/cycles/ConfirmationDialog';
 import { LoadingSkeleton } from '../../components/cycles/LoadingSkeleton';
 import { ArrowLeft, PlusCircle, RefreshCw, Sparkles } from 'lucide-react';
@@ -19,6 +21,7 @@ export const GroupInstallmentsPage = () => {
     const [group, setGroup] = useState<any>(null);
     const [groupLoading, setGroupLoading] = useState(true);
     const [selectedCycleId, setSelectedCycleId] = useState<string>('');
+    const [selectedPaymentInstallment, setSelectedPaymentInstallment] = useState<Installment | null>(null);
 
     const [confirmWaive, setConfirmWaive] = useState<{ isOpen: boolean; installmentId: string | null }>({
         isOpen: false,
@@ -177,11 +180,29 @@ export const GroupInstallmentsPage = () => {
             {/* Installment Table */}
             <InstallmentTable
                 installments={installments}
+                cycles={cycles}
+                currency={group?.financialConfig?.currency || group?.currency || 'INR'}
                 isOrganizer={isOrganizer}
                 isAdmin={isAdmin}
+                currentUserId={user?.id || (user as any)?._id}
                 actionLoading={actionLoading}
                 onWaiveLateFee={(id) => setConfirmWaive({ isOpen: true, installmentId: id })}
+                onPayNow={(inst) => setSelectedPaymentInstallment(inst)}
             />
+
+            {/* Integrated PayNowModal for Direct Member / Organizer-Member Payment */}
+            {selectedPaymentInstallment && (
+                <PayNowModal
+                    isOpen={!!selectedPaymentInstallment}
+                    installment={selectedPaymentInstallment}
+                    currency={group?.financialConfig?.currency || group?.currency || 'INR'}
+                    onClose={() => setSelectedPaymentInstallment(null)}
+                    onPaymentSuccess={() => {
+                        setSelectedPaymentInstallment(null);
+                        refetch();
+                    }}
+                />
+            )}
 
             {/* Waive Late Fee Confirmation Modal */}
             <ConfirmationDialog

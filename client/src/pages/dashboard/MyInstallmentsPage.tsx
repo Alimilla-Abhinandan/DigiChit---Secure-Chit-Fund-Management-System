@@ -20,11 +20,15 @@ export const MyInstallmentsPage = () => {
 
     const filteredInstallments = installments.filter((item) => {
         if (activeTab === 'ALL') return true;
-        return item.status === activeTab;
+        const currentStatus = item.paymentStatus || item.status || 'PENDING';
+        return currentStatus === activeTab;
     });
 
-    const pendingInstallments = installments.filter((i) => i.status === 'PENDING' || i.status === 'OVERDUE');
-    const totalPendingDues = pendingInstallments.reduce((sum, item) => sum + item.amount + (item.lateFee || 0), 0);
+    const pendingInstallments = installments.filter((i) => {
+        const currentStatus = i.paymentStatus || i.status || 'PENDING';
+        return currentStatus === 'PENDING' || currentStatus === 'OVERDUE';
+    });
+    const totalPendingDues = pendingInstallments.reduce((sum, item) => sum + (item.amount || 0) + (item.lateFee || 0) - (item.paidAmount || 0), 0);
 
     if (loading) {
         return <LoadingSkeleton />;

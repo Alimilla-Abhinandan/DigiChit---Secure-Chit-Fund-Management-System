@@ -180,6 +180,14 @@ export const ChitDetails = () => {
     );
     const isAdmin = user?.role === 'ADMIN';
 
+    // Current User Chit-Specific Membership Detection (Independent of Global Role)
+    const myMembership = members.find(m => {
+        const memUserId = typeof m.userId === 'object' ? (m.userId?._id || (m.userId as any)?.id) : m.userId;
+        return memUserId === currentUserIdStr;
+    });
+    const isMyMembershipActive = Boolean(myMembership && ['APPROVED', 'ACTIVE_MEMBER'].includes(myMembership.status));
+    const isMyMembershipRequested = Boolean(myMembership && myMembership.status === 'REQUESTED');
+
     // Feature module hooks
     const {
         cycles,
@@ -402,6 +410,74 @@ export const ChitDetails = () => {
                             <h2 className="text-xl font-black text-slate-900 tracking-tight">Circle Summary & Details</h2>
                         </div>
                     </div>
+
+                    {/* Membership Status Banner (For REQUESTED or ACTIVE_MEMBER) */}
+                    {isMyMembershipRequested && (
+                        <div className="bg-amber-50 border border-amber-200/80 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0 shadow-xs">
+                                    <Clock className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-xs font-black text-amber-900 uppercase tracking-wider">Membership Pending Approval</h4>
+                                        <span className="px-2 py-0.5 bg-amber-200 text-amber-900 text-[10px] font-black rounded-md">REQUESTED</span>
+                                    </div>
+                                    <p className="text-xs text-amber-800 font-medium mt-0.5">
+                                        {isOrganizer
+                                            ? 'You have requested subscriber membership in your own chit. As the organizer, you can approve your request in the Members tab or directly approve yourself below.'
+                                            : 'Your request to join this circle has been submitted and is pending organizer review.'}
+                                    </p>
+                                </div>
+                            </div>
+                            {isOrganizer && (
+                                <button
+                                    onClick={() => handleApproval(myMembership!._id, true)}
+                                    disabled={!!actionLoading}
+                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition cursor-pointer shrink-0 shadow-xs flex items-center gap-1.5 active:scale-95"
+                                >
+                                    {actionLoading === myMembership!._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                    <span>Approve My Membership</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {isMyMembershipActive && (
+                        <div className="bg-emerald-50/80 border border-emerald-200/80 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black shrink-0 shadow-xs">
+                                    <ShieldCheck className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-xs font-black text-emerald-950 uppercase tracking-wider">Enrolled Active Subscriber</h4>
+                                        <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 text-[10px] font-black rounded-md">ACTIVE_MEMBER</span>
+                                        {isOrganizer && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-black rounded-md">ORGANIZER + MEMBER</span>}
+                                    </div>
+                                    <p className="text-xs text-emerald-800 font-medium mt-0.5">
+                                        You are actively subscribed to this circle. You participate in cycles, monthly bidding, and installment contributions.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    onClick={() => setActiveTab('INSTALLMENTS')}
+                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                                >
+                                    <Coins className="w-3.5 h-3.5" />
+                                    <span>My Dues</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('AUCTIONS')}
+                                    className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                                >
+                                    <Hammer className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span>Bidding Room</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Organizer Lead Header Card — transparent icon logo, no lead green tag, no border/shadow */}
                     <div className="bg-white p-6 rounded-2xl border-none shadow-none flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -635,6 +711,66 @@ export const ChitDetails = () => {
                         </div>
                     </div>
 
+                    {/* Enrolled Members Roster Preview */}
+                    <div className="bg-white p-6 rounded-2xl border-none shadow-none space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                                    <Users className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-black text-slate-900 tracking-tight">
+                                        Enrolled Members Roster ({approvedMembers.length} / {group.totalMembers})
+                                    </h3>
+                                    <p className="text-xs text-slate-400 font-medium">Circle participant roster & seat allocation</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setActiveTab('MEMBERS')}
+                                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1"
+                            >
+                                <span>Manage Members</span>
+                                <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                            </button>
+                        </div>
+
+                        {approvedMembers.length === 0 ? (
+                            <div className="py-6 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-xl">
+                                No members approved yet. Manage pending enrollment requests in the Members tab.
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                                {approvedMembers.slice(0, 6).map((m, idx) => {
+                                    const isGroupOrg = (group.organizerId as any)?._id === m.userId._id || (group.organizerId as any) === m.userId._id;
+                                    const isSelf = m.userId._id === currentUserIdStr;
+
+                                    return (
+                                        <div
+                                            key={m._id}
+                                            className={`p-3 rounded-xl border flex items-center gap-3 transition ${
+                                                isSelf ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50/80 border-slate-100'
+                                            }`}
+                                        >
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
+                                                isSelf ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-emerald-400'
+                                            }`}>
+                                                {m.userId.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs font-bold text-slate-900 truncate">{m.userId.name}</span>
+                                                    {isSelf && <span className="text-[9px] font-black text-emerald-600 shrink-0">(You)</span>}
+                                                    {isGroupOrg && <span className="text-[8px] font-bold px-1 bg-blue-50 text-blue-700 rounded shrink-0">Org</span>}
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 block truncate">{m.userId.email}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Group Status Div — transparent, no borders */}
                     <div className="p-5 rounded-2xl flex items-center gap-4 bg-transparent border-none shadow-none">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -657,6 +793,25 @@ export const ChitDetails = () => {
             {/* ─── 2. MEMBERS TAB ─── */}
             {activeTab === 'MEMBERS' && (
                 <div className="bg-transparent p-0 border-none shadow-none space-y-6">
+                    {/* Notice for Pending Self-Approval */}
+                    {isMyMembershipRequested && (
+                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs font-bold shadow-xs">
+                            <div className="flex items-center gap-2.5">
+                                <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                                <span>Your personal membership status in this circle is <strong>REQUESTED</strong> (Pending approval).</span>
+                            </div>
+                            {isOrganizer && (
+                                <button
+                                    onClick={() => handleApproval(myMembership!._id, true)}
+                                    disabled={!!actionLoading}
+                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0 shadow-xs flex items-center gap-1.5"
+                                >
+                                    {actionLoading === myMembership!._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                    <span>Approve Your Request</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
                     {/* Top Standard Title Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
