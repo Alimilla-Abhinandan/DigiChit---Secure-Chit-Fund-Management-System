@@ -15,6 +15,7 @@ import { runRazorpayGatewayTests } from '@modules/payment/__tests__/razorpayPaym
 import { runCycleIsolationTests } from '@modules/auction/__tests__/cycleIsolation.test.js';
 import { runGracefulShutdownTests } from '@shared/shutdown/__tests__/gracefulShutdown.test.js';
 import { runPaymentInitiationIdempotencyTests } from '@modules/payment/__tests__/paymentInitiationIdempotency.test.js';
+import { runRazorpayWebhookTests } from '@modules/payment/__tests__/razorpayWebhook.test.js';
 
 async function main() {
     console.log('\n======================================================');
@@ -84,6 +85,10 @@ async function main() {
         // 15. Run Payment Initiation Idempotency Tests (P2)
         console.log('\n--- 15. PRODUCTION HARDENING: PAYMENT INITIATION IDEMPOTENCY (P2) ---');
         await runPaymentInitiationIdempotencyTests();
+
+        // 16. Run Razorpay Webhook Tests (P3)
+        console.log('\n--- 16. PRODUCTION HARDENING: RAZORPAY WEBHOOK HARDENING (P3) ---');
+        await runRazorpayWebhookTests();
 
         console.log('\n======================================================');
         console.log('  🎉 ALL FINANCIAL & COLLECTION SUITES (P0-P9 + COLLECTION MGMT) PASSED CLEANLY');

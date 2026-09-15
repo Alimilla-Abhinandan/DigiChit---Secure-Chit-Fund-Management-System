@@ -80,6 +80,29 @@ export class TransactionRepository {
         return await Transaction.findOne({ gatewayOrderId: orderId, deletedAt: null });
     }
 
+    public async findByGatewayPaymentId(paymentId: string): Promise<ITransaction | null> {
+        return await Transaction.findOne({ gatewayPaymentId: paymentId, deletedAt: null });
+    }
+
+    public async updateStatusIfCurrent(
+        id: string,
+        currentStatus: TransactionStatus,
+        newStatus: TransactionStatus,
+        updates: Partial<ITransaction> = {}
+    ): Promise<ITransaction | null> {
+        return await Transaction.findOneAndUpdate(
+            { _id: id, status: currentStatus, deletedAt: null },
+            {
+                $set: {
+                    status: newStatus,
+                    ...updates,
+                    updatedAt: new Date()
+                }
+            },
+            { new: true }
+        );
+    }
+
     public async findByInstallmentAndStatus(
         installmentId: string,
         statuses: TransactionStatus[]

@@ -1,8 +1,11 @@
 export { default as transactionRoutes } from './routes/transaction.routes.js';
 export { initPaymentEventListeners } from './listeners/PaymentEventListener.js';
-export { type PaymentDomainEvent, PaymentDomainEventType } from './events/domainEvents.js';
-export {
-    TransactionStatus,
-    type ITransaction,
-    default as Transaction
-} from './models/Transaction.js';
+export { PaymentDomainEventType, type PaymentDomainEvent } from './events/domainEvents.js';
+export { default as Transaction, type ITransaction, TransactionStatus, PaymentMethod, PaymentGatewayProvider } from './models/Transaction.js';
+export { default as PaymentIdempotency, type IPaymentIdempotency, PaymentIdempotencyStatus } from './models/PaymentIdempotency.js';
+export { default as RazorpayWebhookEvent, type IRazorpayWebhookEvent, RazorpayWebhookEventStatus } from './models/RazorpayWebhookEvent.js';
+export { TransactionService } from './services/TransactionService.js';
+export { RazorpayWebhookService } from './services/RazorpayWebhookService.js';
+export { TransactionRepository } from './repositories/TransactionRepository.js';
+export { PaymentIdempotencyRepository } from './repositories/PaymentIdempotencyRepository.js';
+export { RazorpayWebhookEventRepository } from './repositories/RazorpayWebhookEventRepository.js';
