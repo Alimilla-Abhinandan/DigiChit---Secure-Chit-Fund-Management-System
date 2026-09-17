@@ -24,6 +24,20 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+const dispatchEmail = async (mailOptions: any, logSuccessMsg: string, logErrorMsg: string) => {
+    if (process.env.NODE_ENV === 'test') {
+        logger.info(`[TEST_EMAIL] Simulated email to ${mailOptions.to} - Subject: "${mailOptions.subject}"`);
+        return;
+    }
+    try {
+        await transporter.sendMail(mailOptions);
+        logger.info(logSuccessMsg);
+    } catch (error) {
+        logger.error(logErrorMsg, error);
+    }
+};
+
+
 export const sendVerificationEmail = async (email: string, token: string, otp?: string) => {
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
@@ -34,12 +48,7 @@ export const sendVerificationEmail = async (email: string, token: string, otp?: 
         html: getVerificationTemplate(verificationLink, otp),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Verification email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending email:', error);
-    }
+    await dispatchEmail(mailOptions, `Verification email sent to ${email}`, 'Error sending email:');
 };
 
 export const sendOTPEmail = async (email: string, otp: string, name?: string) => {
@@ -50,12 +59,7 @@ export const sendOTPEmail = async (email: string, otp: string, name?: string) =>
         html: getOTPTemplate(otp, name),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`OTP email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending OTP email:', error);
-    }
+    await dispatchEmail(mailOptions, `OTP email sent to ${email}`, 'Error sending OTP email:');
 };
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
@@ -66,12 +70,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         html: getWelcomeTemplate(name),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Welcome email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending welcome email:', error);
-    }
+    await dispatchEmail(mailOptions, `Welcome email sent to ${email}`, 'Error sending welcome email:');
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string, otp?: string) => {
@@ -84,12 +83,7 @@ export const sendPasswordResetEmail = async (email: string, token: string, otp?:
         html: getPasswordResetTemplate(resetLink, otp),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Password reset email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending password reset email:', error);
-    }
+    await dispatchEmail(mailOptions, `Password reset email sent to ${email}`, 'Error sending password reset email:');
 };
 
 export const sendKYCApprovedEmail = async (email: string, name: string) => {
@@ -100,12 +94,7 @@ export const sendKYCApprovedEmail = async (email: string, name: string) => {
         html: getKYCApprovedTemplate(name),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`KYC Approved email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending KYC Approved email:', error);
-    }
+    await dispatchEmail(mailOptions, `KYC Approved email sent to ${email}`, 'Error sending KYC Approved email:');
 };
 
 export const sendKYCRejectedEmail = async (email: string, name: string, reason: string) => {
@@ -116,12 +105,7 @@ export const sendKYCRejectedEmail = async (email: string, name: string, reason: 
         html: getKYCRejectedTemplate(name, reason),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`KYC Rejected email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending KYC Rejected email:', error);
-    }
+    await dispatchEmail(mailOptions, `KYC Rejected email sent to ${email}`, 'Error sending KYC Rejected email:');
 };
 
 export const sendOrganizerApprovedEmail = async (email: string, name: string) => {
@@ -132,12 +116,7 @@ export const sendOrganizerApprovedEmail = async (email: string, name: string) =>
         html: getOrganizerApprovedTemplate(name),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Organizer Approved email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending Organizer Approved email:', error);
-    }
+    await dispatchEmail(mailOptions, `Organizer Approved email sent to ${email}`, 'Error sending Organizer Approved email:');
 };
 
 export const sendOrganizerRejectedEmail = async (email: string, name: string, reason: string) => {
@@ -148,12 +127,7 @@ export const sendOrganizerRejectedEmail = async (email: string, name: string, re
         html: getOrganizerRejectedTemplate(name, reason),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Organizer Rejected email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending Organizer Rejected email:', error);
-    }
+    await dispatchEmail(mailOptions, `Organizer Rejected email sent to ${email}`, 'Error sending Organizer Rejected email:');
 };
 
 export const sendContactReplyEmail = async (email: string, name: string, originalMessage: string, adminResponse: string) => {
@@ -164,12 +138,7 @@ export const sendContactReplyEmail = async (email: string, name: string, origina
         html: getContactReplyTemplate(name, originalMessage, adminResponse),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Contact Reply email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending Contact Reply email:', error);
-    }
+    await dispatchEmail(mailOptions, `Contact Reply email sent to ${email}`, 'Error sending Contact Reply email:');
 };
 
 export const sendChitGroupCreatedEmail = async (email: string, name: string, groupName: string, contribution: number, members: number, startDate: string) => {
@@ -180,10 +149,5 @@ export const sendChitGroupCreatedEmail = async (email: string, name: string, gro
         html: getChitGroupCreatedTemplate(name, groupName, contribution, members, startDate),
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        logger.info(`Chit Group Created email sent to ${email}`);
-    } catch (error) {
-        logger.error('Error sending Chit Group Created email:', error);
-    }
+    await dispatchEmail(mailOptions, `Chit Group Created email sent to ${email}`, 'Error sending Chit Group Created email:');
 };

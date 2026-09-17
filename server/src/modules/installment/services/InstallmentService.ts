@@ -296,7 +296,8 @@ export class InstallmentService {
         const group = await this.repo.findGroupById(installment.groupId);
         const isOrganizer = group && group.organizerId.toString() === actorId;
 
-        if (actorRole !== UserRole.ADMIN && !isOrganizer && installment.userId.toString() !== actorId) {
+        const instUserId = ((installment.userId as any)?._id || installment.userId)?.toString();
+        if (actorRole !== UserRole.ADMIN && !isOrganizer && instUserId !== actorId) {
             throw new AppError('Unauthorized to view this installment.', 403, 'UNAUTHORIZED');
         }
 
